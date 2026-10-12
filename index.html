@@ -25,6 +25,7 @@
   --c-exhibit: #2563eb;
   --c-xmas: #16a34a;
   --c-move: #6b7280;
+  --c-food: #0d9488;
   --shadow: 0 2px 10px rgba(60, 40, 20, .08);
 }
 @media (prefers-color-scheme: dark) {
@@ -87,6 +88,13 @@ ol.stops li.active { outline: 2px solid var(--accent); }
 .tag.warn { background: var(--warn-soft); color: var(--warn); }
 .links { margin-top: 6px; display: flex; gap: 10px; font-size: 12px; }
 .links a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.routebtn { display: block; margin-top: 8px; padding: 9px 12px; border-radius: 10px; background: var(--ink); color: var(--bg); text-decoration: none; font-size: 13px; font-weight: 700; text-align: center; }
+.routebtn:focus-visible, button.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.foodbox { margin-top: 8px; padding: 8px 10px; border: 1px dashed var(--c-food); border-radius: 10px; font-size: 13px; display: grid; gap: 3px; }
+.foodbox a { color: var(--ink); font-weight: 600; }
+.alt { font-size: 11px; color: var(--muted); }
+.alts { margin-top: 6px; font-size: 12px; color: var(--muted); display: grid; gap: 2px; }
+.alts a { color: var(--accent); font-weight: 600; text-decoration: none; }
 .move { color: var(--muted); font-size: 12px; padding: 0 16px 0 56px; margin-top: -4px; }
 section.tips { padding: 4px 16px 24px; }
 section.tips h3 { font-size: 15px; margin: 18px 0 6px; }
@@ -103,6 +111,7 @@ section.tips li { margin: 4px 0; }
 #toggle { display: none; }
 .dim { opacity: .35; }
 #map.tileless { background: var(--panel); }
+.mapnote { max-width: 220px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 6px 9px; font-size: 12px; box-shadow: var(--shadow); }
 .area { background: none; border: 0; box-shadow: none; color: var(--muted); font-size: 12px; font-weight: 600; }
 .area::before { display: none; }
 
@@ -175,6 +184,7 @@ const CATS = {
   claw:    { label: "뽑기·가챠", color: "var(--c-claw)",    hex: "#ec4899", emoji: "🧸" },
   exhibit: { label: "전시",      color: "var(--c-exhibit)", hex: "#2563eb", emoji: "🖼️" },
   xmas:    { label: "크리스마스", color: "var(--c-xmas)",    hex: "#16a34a", emoji: "🎄" },
+  food:    { label: "맛집",      color: "var(--c-food)",    hex: "#0d9488", emoji: "🍽️" },
   move:    { label: "교통",      color: "var(--c-move)",    hex: "#6b7280", emoji: "🚄" },
 };
 
@@ -191,17 +201,23 @@ const DAYS = [
         desc: "4호선 → 신용산 또는 1호선 → 용산 (5분)." },
       { t: "11:00", name: "테디뵈르하우스 (용리단길)", cat: "bread", lat: 37.5326, lng: 126.9688, q: "테디뵈르하우스 용산",
         desc: "크루아상·소금빵으로 유명한 용리단길 베이커리. 브런치 겸 첫 빵.", tags: ["오전 방문 추천"] },
-      { t: "12:30", name: "용산 아이파크몰 · 도파민스테이션", cat: "claw", lat: 37.5296, lng: 126.9646, q: "용산 아이파크몰 도파민스테이션",
+      { t: "12:00", name: "용산 아이파크몰 · 도파민스테이션", cat: "claw", lat: 37.5296, lng: 126.9646, q: "용산 아이파크몰 도파민스테이션",
         desc: "일본 IP 가챠·뽑기숍 밀집 구역 + 리빙파크 6층 반다이남코 코리아 스토어(250평). 월 가챠 매출 13억이 나오는 서울 가챠 성지.",
         tags: ["가챠 1회 6~8천원"] },
+      { t: "13:30", name: "쌤쌤쌤 (용리단길 · 파스타)", cat: "food", lat: 37.5310, lng: 126.9695, q: "쌤쌤쌤 용산",
+        desc: "용리단길 대표 웨이팅 맛집. 평일 점심 피크(12시) 살짝 지나서 가면 대기 짧아요.", tags: ["점심", "웨이팅 있음"],
+        alts: [{ name: "효뜨", q: "효뜨 용산", desc: "베트남 쌀국수·반미" }, { name: "꺼거", q: "꺼거 용산", desc: "홍콩식 덮밥·딤섬" }] },
       { t: "15:00", name: "국립중앙박물관 · 쿤스트하우스 취리히 특별전", cat: "exhibit", lat: 37.5239, lng: 126.9803, q: "국립중앙박물관",
         desc: "인상파~모더니즘 유럽 명작전(2026.11~2027.4 예정, 가제). 상설관은 무료, 특별전은 유료·예매 권장.",
         tags: ["예매 권장"], warn: "정식 개막일·제목 미확정 — 11월에 공식 홈페이지 확인" },
       { t: "18:30", name: "신세계백화점 본점 미디어파사드", cat: "xmas", lat: 37.5609, lng: 126.9810, q: "신세계백화점 본점",
         desc: "매년 11월 중순~1월 서울에서 가장 유명한 크리스마스 외벽 영상. 맞은편 롯데백화점 본점 크리스마스 장식까지 같이.",
         warn: "2026 연출은 11월 공개 예정(매년 진행)" },
-      { t: "19:30", name: "명동 거리 · 뽑기방 + 저녁", cat: "claw", lat: 37.5636, lng: 126.9849, q: "명동 인형뽑기",
-        desc: "명동은 밤늦게까지 여는 무인 인형뽑기방이 많은 상권. 저녁 먹고 숙소 가는 길에 몇 판." },
+      { t: "19:15", name: "명동교자 본점 (칼국수·만두)", cat: "food", lat: 37.5625, lng: 126.9856, q: "명동교자 본점",
+        desc: "1966년부터 이어온 명동 칼국수. 마늘 김치가 포인트, 회전 빨라 줄이 길어도 금방 들어가요.", tags: ["저녁"],
+        alts: [{ name: "하동관 (곰탕)", q: "하동관 명동", desc: "80년 넘은 곰탕 노포 · 오후 4시쯤 마감될 수 있어 점심 대안" }] },
+      { t: "20:15", name: "명동 거리 · 뽑기방", cat: "claw", lat: 37.5636, lng: 126.9849, q: "명동 인형뽑기",
+        desc: "명동은 밤늦게까지 여는 무인 인형뽑기방이 많은 상권. 숙소 가는 길에 몇 판." },
     ],
   },
   {
@@ -214,7 +230,9 @@ const DAYS = [
       { t: "11:00", name: "짱구는 못말려 몰입형 전시 「놀자! 시공간 대모험」", cat: "exhibit", lat: 37.5430, lng: 127.0560, q: "성수 짱구는 못말려 전시 연무장5길",
         desc: "성동구 연무장5길 9-29. 조형물·미디어아트 속에서 짱구·흰둥이와 미션 수행하는 체험형 전시. 굿즈샵 필수 코스.",
         tags: ["2026.10.17~2027.1.24", "커플 사진 맛집"] },
-      { t: "12:30", name: "성수 연무장길 팝업 투어", cat: "popup", lat: 37.5434, lng: 127.0577, q: "성수 연무장길",
+      { t: "12:15", name: "소문난성수감자탕", cat: "food", lat: 37.5425, lng: 127.0545, q: "소문난성수감자탕",
+        desc: "성동구 연무장길 45. 주말엔 줄이 건물을 감는 노포지만 평일은 훨씬 수월. 감자탕 중자 + 수제비 사리 추천.", tags: ["점심", "줄서기(예약 없음)"] },
+      { t: "13:15", name: "성수 연무장길 팝업 투어", cat: "popup", lat: 37.5434, lng: 127.0577, q: "성수 연무장길",
         desc: "연무장길·아뜰리에길 일대 팝업 밀집지. 12월엔 브랜드 크리스마스 팝업이 몰려요. 토리든 커넥트 성수(~12/31) 등.",
         warn: "12월 라인업은 출발 1주 전 팝플리/성수동고릴라에서 확인" },
       { t: "14:30", name: "어니언 성수", cat: "bread", lat: 37.5447, lng: 127.0585, q: "어니언 성수",
@@ -223,7 +241,9 @@ const DAYS = [
         desc: "팝업 돌다 지치면 잠깐 산책. 서울숲역 주변 디저트숍도 많음." },
       { t: "17:00", name: "건대 커먼그라운드 · 건대 뽑기 거리", cat: "claw", lat: 37.5408, lng: 127.0680, q: "건대입구 인형뽑기",
         desc: "컨테이너 쇼핑몰 구경 + 건대 먹자골목 뽑기방 밀집. 저녁도 여기서." },
-      { t: "19:00", name: "잠실 롯데월드몰 · 크리스마스 마켓", cat: "xmas", lat: 37.5125, lng: 127.1025, q: "롯데월드타워 월드파크 크리스마스마켓",
+      { t: "18:00", name: "건대 양꼬치 거리", cat: "food", lat: 37.5385, lng: 127.0690, q: "건대 양꼬치거리",
+        desc: "자양동 양꼬치 골목. 양꼬치 + 꿔바로우 + 칭다오로 저녁 → 2호선 타고 잠실로.", tags: ["저녁"], warn: "위치 근사치" },
+      { t: "19:30", name: "잠실 롯데월드몰 · 크리스마스 마켓", cat: "xmas", lat: 37.5125, lng: 127.1025, q: "롯데월드타워 월드파크 크리스마스마켓",
         desc: "월드파크 잔디광장 유럽풍 크리스마스 마켓 + 대형 트리. 몰 안에도 가챠숍이 들어왔어요.",
         warn: "2025년 11/20~1/4 운영 — 2026 일정 미발표" },
     ],
@@ -238,8 +258,9 @@ const DAYS = [
       { t: "11:30", name: "국제갤러리 (삼청동)", cat: "exhibit", lat: 37.5807, lng: 126.9806, q: "국제갤러리",
         desc: "무료 관람 갤러리. 12월 이희준 개인전(K1·K2) 예정. 국현 서울관에서 도보 3분.",
         tags: ["무료"], warn: "12월 중 개막 예정 — 정확한 날짜 확인" },
-      { t: "12:30", name: "서촌 점심 · 통인시장", cat: "bread", lat: 37.5810, lng: 126.9698, q: "서촌 통인시장",
-        desc: "기름떡볶이 + 서촌 골목 베이커리·카페. 근처 그라운드시소 서촌도 들러볼 만(사진·애니 전시 위주)." },
+      { t: "12:30", name: "토속촌삼계탕 (서촌)", cat: "food", lat: 37.5779, lng: 126.9718, q: "토속촌삼계탕",
+        desc: "1983년부터, 견과류 들어간 진한 국물. 12월 전시 투어 중 몸 녹이기 딱. 식후 통인시장 기름떡볶이로 디저트.", tags: ["점심"],
+        alts: [{ name: "영화루 (고추간짜장)", q: "영화루 누하동", desc: "3대째 중식 노포 · 맵기 조절 필수" }, { name: "통인시장 기름떡볶이", q: "통인시장 기름떡볶이", desc: "엽전 도시락 · 근처 그라운드시소 서촌" }] },
       { t: "14:30", name: "세화미술관 · 게오르그 바젤리츠", cat: "exhibit", lat: 37.5703, lng: 126.9727, q: "세화미술관",
         desc: "올해 4월 작고한 거장의 60여 년 회고. 광화문 흥국생명빌딩, 망치질하는 사람 조형물 옆.",
         tags: ["~2026.12.27", "월요일 휴관"] },
@@ -249,9 +270,11 @@ const DAYS = [
       { t: "18:00", name: "광화문 마켓 (광화문광장)", cat: "xmas", lat: 37.5720, lng: 126.9769, q: "광화문광장",
         desc: "유럽 크리스마스 마켓 콘셉트 빌리지 + 소상공인 부스 + 대형 트리. 핫와인·츄러스 들고 청계천까지.",
         tags: ["저녁 18~22시(작년)"], warn: "2025년 12/12~31 운영. 2026은 12월 예정만 발표", w1: false, w2: true },
-      { t: "19:30", name: "청계천 겨울 조명", cat: "xmas", lat: 37.5693, lng: 126.9784, q: "청계광장",
-        desc: "청계광장~광교 구간 연말 조명(서울윈터페스타 기간). 광화문 마켓에서 걸어서 5분.",
+      { t: "19:00", name: "청계천 겨울 조명", cat: "xmas", lat: 37.5693, lng: 126.9784, q: "청계광장",
+        desc: "청계광장~광교 구간 연말 조명(서울윈터페스타 기간). 광화문 마켓에서 걸어서 5분, 물길 따라 광장시장까지 산책.",
         warn: "2026 서울윈터페스타 일정 확인" },
+      { t: "20:00", name: "광장시장 (육회·빈대떡)", cat: "food", lat: 37.5700, lng: 126.9996, q: "광장시장",
+        desc: "청계천 따라 걷거나 1호선 종로5가. 육회골목 + 녹두빈대떡 + 마약김밥. 평일 밤이라 비교적 수월.", tags: ["저녁"] },
     ],
   },
   {
@@ -264,6 +287,9 @@ const DAYS = [
       { t: "12:00", name: "ALT.1 · 조르조 모란디 전", cat: "exhibit", lat: 37.5262, lng: 126.9280, q: "더현대 서울 ALT.1",
         desc: "더현대 6층 전시관. 이탈리아 정물화 거장 모란디 — 차분한 색감이라 쉬어가는 전시로 좋아요.",
         tags: ["2026.11.21~2027.3.1"] },
+      { t: "13:00", name: "진주집 (여의도백화점 B1)", cat: "food", lat: 37.5216, lng: 126.9260, q: "진주집 여의도",
+        desc: "겨울엔 닭칼국수 + 보쌈김치. 여의도 직장인 점심 피크(12~13시)만 피하면 OK. 더현대에서 도보 10분.", tags: ["점심"],
+        alts: [{ name: "더현대 서울 B1 식당가", q: "더현대 서울 식당가", desc: "이동 없이 해결하고 싶을 때" }] },
       { t: "14:30", name: "AK& 홍대 · 가챠 전문관", cat: "claw", lat: 37.5574, lng: 126.9245, q: "AK플라자 홍대",
         desc: "홍대입구역 직결. 가챠 기기를 1년 반 만에 2배 이상 늘린 대형 가챠 매장.", tags: ["역 직결"] },
       { t: "15:30", name: "홍대 걷고싶은거리 · 뽑기방 골목", cat: "claw", lat: 37.5546, lng: 126.9226, q: "홍대 인형뽑기",
@@ -271,8 +297,11 @@ const DAYS = [
       { t: "17:30", name: "피터팬1978 (연희동)", cat: "bread", lat: 37.5664, lng: 126.9308, q: "피터팬1978 연희",
         desc: "10년 연속 블루리본 연희동 터줏대감. 대구 가서 먹을 바게트·식빵류 사기 좋음.",
         warn: "저녁엔 인기 빵 품절 가능 — 위치 근사치" },
-      { t: "19:00", name: "연남동 경의선숲길 · 저녁", cat: "popup", lat: 37.5610, lng: 126.9250, q: "연남동 경의선숲길",
-        desc: "연트럴파크 산책 + 연남동 소품숍·작은 팝업. 마지막 서울 밤 저녁." },
+      { t: "18:30", name: "연남동 경의선숲길", cat: "popup", lat: 37.5610, lng: 126.9250, q: "연남동 경의선숲길",
+        desc: "연트럴파크 산책 + 연남동 소품숍·작은 팝업." },
+      { t: "19:30", name: "소이연남 (태국 쌀국수)", cat: "food", lat: 37.5617, lng: 126.9246, q: "소이연남",
+        desc: "연남동 대표 웨이팅 맛집. 소고기 쌀국수 + 뿌팟퐁커리로 마지막 서울 밤 저녁.", tags: ["저녁", "웨이팅 있음"], warn: "위치 근사치",
+        alts: [{ name: "툭툭누들타이", q: "툭툭누들타이", desc: "미쉐린 빕구르망 태국집 · 이전 소식 있어 위치 확인" }] },
     ],
   },
   {
@@ -287,7 +316,10 @@ const DAYS = [
       { t: "12:45", name: "성심당 케익부띠끄 본점", cat: "bread", lat: 36.3281, lng: 127.4266, q: "성심당 케익부띠끄 본점",
         desc: "겨울 시즌 '딸기시루'(작년 대형 2.3kg 49,000원). 크리스마스 직전이라 줄이 깁니다.",
         warn: "딸기시루 판매 시기·수량 공식 SNS 확인. 리셀 구매 금지" },
-      { t: "13:30", name: "콜드버터베이크샵 (대흥동)", cat: "bread", lat: 36.3255, lng: 127.4222, q: "콜드버터베이크샵 대흥",
+      { t: "13:20", name: "광천식당 (두부두루치기)", cat: "food", lat: 36.3262, lng: 127.4288, q: "광천식당 대전",
+        desc: "45년, 3대째 대전식 두루치기. 두부두루치기 + 칼국수 사리. 대전 와서 빵만 먹기 아쉬울 때.", tags: ["점심"], warn: "위치 근사치",
+        alts: [{ name: "한밭칼국수 (은행동)", q: "한밭칼국수 은행동", desc: "칼국수집인데 두부탕이 명물" }, { name: "진로집", q: "진로집 대전", desc: "백반기행 두부두루치기" }] },
+      { t: "14:20", name: "콜드버터베이크샵 (대흥동)", cat: "bread", lat: 36.3255, lng: 127.4222, q: "콜드버터베이크샵 대흥",
         desc: "대전 구움과자 대표. 휘낭시에가 특히 유명 — 선물용 박스 추천.", warn: "위치 근사치" },
       { t: "15:00", name: "성심당 대전역점", cat: "bread", lat: 36.3326, lng: 127.4340, q: "성심당 대전역점",
         desc: "역 2층 대합실. 본점에서 못 산 빵 마무리 → 바로 탑승. 줄이 본점보다 짧은 편." },
@@ -326,6 +358,13 @@ const layer = L.layerGroup().addTo(map);
 // 지도 타일을 불러올 수 없는 환경(예: 외부 이미지가 막힌 미리보기)에서는 한강과 동네 이름만 그린 간이 지도를 보여줍니다.
 if (window.TILELESS) {
   document.getElementById("map").classList.add("tileless");
+  const note = L.control({ position: "topright" });
+  note.onAdd = () => {
+    const div = L.DomUtil.create("div", "mapnote");
+    div.textContent = "간이 지도예요. 실제 지도는 왼쪽(아래) 각 Day의 ‘실제 지도로 열기’ 버튼을 누르세요.";
+    return div;
+  };
+  note.addTo(map);
   const water = getComputedStyle(document.documentElement).getPropertyValue("--water").trim() || "#cfe3f2";
   L.polyline([[37.592,126.80],[37.575,126.84],[37.560,126.875],[37.545,126.90],[37.535,126.925],[37.524,126.95],[37.517,126.975],
     [37.513,127.00],[37.519,127.02],[37.528,127.045],[37.535,127.07],[37.530,127.088],[37.520,127.10],[37.523,127.12],[37.540,127.135],[37.555,127.15]],
@@ -338,6 +377,9 @@ if (window.TILELESS) {
 
 const naver = q => "https://map.naver.com/p/search/" + encodeURIComponent(q);
 const kakao = q => "https://map.kakao.com/link/search/" + encodeURIComponent(q);
+// 하루 동선 전체를 실제 지도(구글 지도 경로)로 여는 링크. 서울 밖 이동 구간(KTX)은 제외.
+const dayRoute = d => "https://www.google.com/maps/dir/" +
+  d.stops.filter(s => !s.noRoute).map(s => encodeURIComponent(s.q)).join("/");
 
 function availability(s) {
   const v = s[state.week];
@@ -357,6 +399,7 @@ function popupHtml(s, d) {
   const c = CATS[s.cat];
   return `<b>${s.name}</b><br><span style="color:${c.hex}">${c.emoji} ${c.label}</span> · Day ${d.id} ${s.t}<br>${s.desc}` +
     (s.warn ? `<br><span style="color:#9a6200">⚠️ ${s.warn}</span>` : "") +
+    (s.alts ? `<br>대안: ${s.alts.map(a => a.name).join(", ")}` : "") +
     `<br><a href="${naver(s.q)}" target="_blank" rel="noopener">네이버지도</a> · <a href="${kakao(s.q)}" target="_blank" rel="noopener">카카오맵</a>`;
 }
 
@@ -397,7 +440,12 @@ function renderList(days) {
   days.forEach(d => {
     const head = document.createElement("div");
     head.className = "dayhead";
-    head.innerHTML = `<h2>${d.title}</h2><p>${d.note}</p>`;
+    const foods = d.stops.filter(s => s.cat === "food");
+    head.innerHTML = `<h2>${d.title}</h2><p>${d.note}</p>
+      <a class="routebtn" href="${dayRoute(d)}" target="_blank" rel="noopener">🗺️ 이 날 동선을 실제 지도로 열기 (구글 지도)</a>
+      ${foods.length ? `<div class="foodbox"><b>🍽️ 오늘의 맛집</b>${foods.map(f =>
+        `<div>${f.t} <a href="${naver(f.q)}" target="_blank" rel="noopener">${f.name}</a>${(f.alts || []).map(a =>
+          ` · <span class="alt">대안</span> <a href="${naver(a.q)}" target="_blank" rel="noopener">${a.name}</a>`).join("")}</div>`).join("")}</div>` : ""}`;
     el.appendChild(head);
     const ol = document.createElement("ol");
     ol.className = "stops";
@@ -418,6 +466,8 @@ function renderList(days) {
           <div class="name">${s.name}<span class="cat" style="background:${c.hex}">${c.emoji} ${c.label}</span></div>
           <div class="desc">${s.desc}</div>
           ${(tags || warn || avTag) ? `<div class="tags">${tags}${avTag}${warn}</div>` : ""}
+          ${s.alts ? `<div class="alts">${s.alts.map(a =>
+            `<div>↳ 대안 <b>${a.name}</b> — ${a.desc} · <a href="${naver(a.q)}" target="_blank" rel="noopener">네이버</a> <a href="${kakao(a.q)}" target="_blank" rel="noopener">카카오</a></div>`).join("")}</div>` : ""}
           <div class="links">
             <a href="${naver(s.q)}" target="_blank" rel="noopener">네이버지도 ↗</a>
             <a href="${kakao(s.q)}" target="_blank" rel="noopener">카카오맵 ↗</a>
