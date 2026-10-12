@@ -114,6 +114,9 @@ section.tips li { margin: 4px 0; }
 .pin span { transform: rotate(45deg); color: #fff; font-weight: 700; font-size: 12px; font-family: sans-serif; }
 #toggle { display: none; }
 .dim { opacity: .35; }
+.stays { display: grid; gap: 6px; margin-top: 6px; }
+.stays > div { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.stays .note { color: var(--muted); }
 .home { width: 30px; height: 30px; border-radius: 50%; background: var(--panel); border: 2px solid var(--ink); display: grid; place-items: center; font-size: 15px; box-shadow: var(--shadow); }
 #map.tileless { background: var(--outside); }
 .gu { background: none; border: 0; box-shadow: none; color: var(--muted); opacity: .75; font-size: 11px; }
@@ -155,7 +158,15 @@ section.tips li { margin: 4px 0; }
     <ul>
       <li><b>추천 구역: 종로3가·익선동</b> (지도 🏠). 명동보다 1박 1~3만원 싸고, 3일차 밤 포차·24시간 오락실에서 걸어서 귀가. 1·3·5호선에 2호선(을지로3가 도보 7분)까지 다 닿아요.</li>
       <li><b>가격대(검색 기준, 날짜 미반영)</b>: 익선동 호텔 최저 4만원대, 종로3가역 모텔 6~8만원대, 명동 비즈니스호텔은 대개 10만원 이상. 4박이면 종로3가 기준 약 24~32만원 예상.</li>
-      <li><b>후보 (후기상 가성비)</b>:
+      <li><b>직접 찾은 후보 (1박 가격은 찾을 당시 기준)</b>
+        <div class="stays">
+          <div><a href="https://map.naver.com/p/search/%EB%8D%94%20%EC%8A%A4%ED%80%98%EC%96%B4%20%ED%98%B8%EC%8A%A4%ED%85%94%20%EC%A2%85%EB%A1%9C" target="_blank" rel="noopener">더 스퀘어 호스텔 종로</a> · <b>89,733원</b> (4박 약 35.9만) · 체크인 15시/아웃 11시 · 종로3가역 5호선 출구 바로 앞, 방음 좋음 · <span class="note">최저가·위치 최고. 2인 개인실·더블베드인지 확인(사진은 트윈)</span></div>
+          <div><a href="https://map.naver.com/p/search/%EC%95%84%EB%8A%91%20%ED%98%B8%ED%85%94%20%EC%95%A4%20%EC%8A%A4%ED%8C%8C%20%EC%A2%85%EB%A1%9C%20%EC%95%88%EA%B5%AD%202%ED%98%B8%EC%A0%90" target="_blank" rel="noopener">아늑 호텔 앤 스파 종로 안국 2호점</a> · <b>107,326원</b> (4박 약 42.9만) · <b>조식 포함</b> · 체크인 18시/아웃 12시 · 창덕궁 돈화문 근처, 안국역·종로3가역 도보 7~10분 · <span class="note">가장 예쁨. 18시 체크인이라 Day 1 아침 짐 보관 꼭 확인</span></div>
+          <div><a href="https://map.naver.com/p/search/%ED%83%91%20%ED%98%B8%ED%85%94%20%EC%95%A4%20%EB%A0%88%EC%A7%80%EB%8D%98%EC%8A%A4%20%EC%A2%85%EB%A1%9C" target="_blank" rel="noopener">탑 호텔 앤 레지던스</a> · <b>122,490원</b> (4박 약 49만) · 체크인 15시/아웃 11시 · 낙원동, 익선동 바로 옆 · 주방·세탁기 · <span class="note">평점 8.6이지만 이번 일정은 외식 위주라 주방 활용도 낮음</span></div>
+          <div><a href="https://map.naver.com/p/search/%EC%BC%80%EC%9D%B4%EB%B8%8C%20%EB%A3%8C%EC%B9%B8%20%ED%98%B8%ED%85%94%20%EC%A2%85%EB%A1%9C" target="_blank" rel="noopener">케이브 료칸 호텔 by 아늑 종로</a> · 가격 미확인 · 수표로22길 10 · 종로3가역 바로 북쪽 · <span class="note">위치는 더 스퀘어와 비슷하게 좋음</span></div>
+        </div>
+      </li>
+      <li><b>그 밖의 후보 (후기상 가성비)</b>:
         <a href="https://map.naver.com/p/search/%EC%A2%85%EB%A1%9C%20%EB%B6%80%ED%8B%B0%ED%81%AC%20%ED%98%B8%ED%85%94K" target="_blank" rel="noopener">종로 부티크 호텔K</a> (종로3가역 도보 6분, 평점 9.1) ·
         <a href="https://map.naver.com/p/search/%EB%A6%AC%EC%95%88%ED%98%B8%ED%85%94%20%EC%A2%85%EB%A1%9C" target="_blank" rel="noopener">리안 호텔</a> (종로3가역 가까움, 저렴) ·
         <a href="https://map.naver.com/p/search/%EB%82%98%ED%8F%AC%EB%A0%88%20%ED%98%B8%ED%85%94%20%EC%A2%85%EB%A1%9C" target="_blank" rel="noopener">나포레</a> (커플 후기, 역 가까움) ·
