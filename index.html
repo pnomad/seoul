@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>서울 4박 5일 지도</title>
+<meta name="description" content="대구 출발 커플의 12월 평일 서울 4박 5일 동선 — 팝업, 빵, 인형뽑기, 전시, 대전 성심당 귀갓길">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root {
+  --bg: #faf7f2;
+  --panel: #ffffff;
+  --ink: #2b2522;
+  --muted: #7a6f68;
+  --line: #ece4da;
+  --accent: #c8102e;
+  --accent-soft: #fde8eb;
+  --warn: #9a6200;
+  --warn-soft: #fff4dc;
+  --ok: #1f7a4d;
+  --water: #cfe3f2;
+  --c-popup: #8b5cf6;
+  --c-bread: #d97706;
+  --c-claw: #ec4899;
+  --c-exhibit: #2563eb;
+  --c-xmas: #16a34a;
+  --c-move: #6b7280;
+  --shadow: 0 2px 10px rgba(60, 40, 20, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1b1817; --panel: #252120; --ink: #f2ece6; --muted: #a99e96; --line: #3a3330;
+    --accent: #ff5a6e; --accent-soft: #3a1f24; --warn: #f2b84b; --warn-soft: #3a2f17;
+    --ok: #4ade80; --water: #1e3a50; --shadow: 0 2px 10px rgba(0,0,0,.35); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1b1817; --panel: #252120; --ink: #f2ece6; --muted: #a99e96; --line: #3a3330;
+  --accent: #ff5a6e; --accent-soft: #3a1f24; --warn: #f2b84b; --warn-soft: #3a2f17;
+  --ok: #4ade80; --water: #1e3a50; --shadow: 0 2px 10px rgba(0,0,0,.35); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  font-size: 15px; line-height: 1.5;
+  display: grid; grid-template-columns: 420px 1fr; grid-template-rows: 100%;
+}
+#side { overflow-y: auto; border-right: 1px solid var(--line); background: var(--bg); }
+#map { height: 100%; width: 100%; }
+header { padding: 18px 16px 10px; }
+h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -.3px; }
+.sub { color: var(--muted); font-size: 13px; margin: 0; }
+.bar { padding: 8px 16px; display: flex; gap: 6px; flex-wrap: wrap; position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); z-index: 5; border-bottom: 1px solid var(--line); }
+.bar.filters { position: static; border-bottom: 0; padding-top: 4px; }
+button.chip {
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+}
+button.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button.chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+button.chip.off { opacity: .45; }
+.weekbox { margin: 8px 16px 0; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.weekbox label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; }
+.seg { display: flex; gap: 6px; }
+.seg button { flex: 1; }
+.verdict { font-size: 13px; margin-top: 8px; }
+.verdict b { color: var(--accent); }
+.dayhead { padding: 14px 16px 4px; }
+.dayhead h2 { font-size: 17px; margin: 0; }
+.dayhead p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+ol.stops { list-style: none; margin: 0; padding: 4px 16px 16px; }
+ol.stops li {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; margin: 8px 0; box-shadow: var(--shadow); cursor: pointer;
+  display: grid; grid-template-columns: 30px 1fr; gap: 10px;
+}
+ol.stops li.active { outline: 2px solid var(--accent); }
+.num { width: 26px; height: 26px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 13px; display: grid; place-items: center; }
+.t { font-size: 12px; color: var(--muted); }
+.name { font-weight: 700; }
+.cat { font-size: 11px; padding: 1px 7px; border-radius: 999px; color: #fff; margin-left: 4px; vertical-align: 2px; }
+.desc { font-size: 13px; margin-top: 3px; }
+.tags { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 11px; padding: 2px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+.links { margin-top: 6px; display: flex; gap: 10px; font-size: 12px; }
+.links a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.move { color: var(--muted); font-size: 12px; padding: 0 16px 0 56px; margin-top: -4px; }
+section.tips { padding: 4px 16px 24px; }
+section.tips h3 { font-size: 15px; margin: 18px 0 6px; }
+section.tips ul { margin: 0; padding-left: 18px; font-size: 13px; }
+section.tips li { margin: 4px 0; }
+.check { list-style: none; padding-left: 0 !important; }
+.check label { cursor: pointer; }
+.src { font-size: 12px; color: var(--muted); }
+.src a { color: var(--muted); }
+.leaflet-popup-content { font-family: inherit; font-size: 13px; line-height: 1.45; }
+.leaflet-popup-content b { font-size: 14px; }
+.pin { width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); display: grid; place-items: center; }
+.pin span { transform: rotate(45deg); color: #fff; font-weight: 700; font-size: 12px; font-family: sans-serif; }
+#toggle { display: none; }
+.dim { opacity: .35; }
+#map.tileless { background: var(--panel); }
+.area { background: none; border: 0; box-shadow: none; color: var(--muted); font-size: 12px; font-weight: 600; }
+.area::before { display: none; }
+
+@media (max-width: 820px) {
+  body { grid-template-columns: 100%; grid-template-rows: 45vh 55vh; }
+  #map { grid-row: 1; }
+  #side { grid-row: 2; border-right: 0; border-top: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<aside id="side">
+  <header>
+    <h1>🎄 서울 4박 5일 · 커플 동선</h1>
+    <p class="sub">대구 출발 → 서울(평일) → 대전 성심당 → 대구 · 팝업 · 빵 · 인형뽑기 · 전시</p>
+  </header>
+
+  <div class="weekbox">
+    <label>여행 주간 선택 (12월은 둘 다 월~금)</label>
+    <div class="seg">
+      <button class="chip" data-week="w1">12/7(월)–11(금)</button>
+      <button class="chip" data-week="w2" aria-pressed="true">12/14(월)–18(금)</button>
+    </div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <nav class="bar" id="days" aria-label="일자"></nav>
+  <div class="bar filters" id="cats" aria-label="카테고리"></div>
+
+  <div id="list"></div>
+
+  <section class="tips">
+    <h3>📌 출발 전 체크리스트</h3>
+    <ul class="check" id="checklist"></ul>
+
+    <h3>🧭 서울 전문가 팁</h3>
+    <ul>
+      <li><b>숙소는 명동·을지로 1곳 고정</b> 추천. 서울역(KTX)·성수·홍대·여의도 모두 지하철 20~30분, 밤에 명동 크리스마스 조명 보고 걸어서 귀가 가능.</li>
+      <li><b>평일의 장점</b>: 성수 팝업·더현대·짱구 전시 모두 주말 대비 웨이팅이 훨씬 짧아요. 인기 팝업은 <b>오픈 직후(11~12시)</b>가 가장 한산.</li>
+      <li><b>팝업은 2주 단위로 바뀝니다.</b> 출발 1주 전 <a href="https://popply.co.kr/" target="_blank" rel="noopener">팝플리</a>·<a href="https://www.seongsudonggorilla.com/" target="_blank" rel="noopener">성수동고릴라</a>·<a href="https://sungsuya.com/en/calendar/" target="_blank" rel="noopener">성수야 캘린더</a>에서 12월 팝업 보고 Day 2·4 빈칸을 채우세요.</li>
+      <li><b>인형뽑기 요령</b>: 1판 1,000~3,000원, 가챠는 요즘 6,000~8,000원대. "확률기"보다 집게 힘이 보이는 기계를 몇 판 구경한 뒤 도전. 현금 대신 카드/페이 되는 무인점이 대부분.</li>
+      <li><b>월요일 휴관</b>: 세화미술관·리움 등 사립 미술관은 월요일 휴관이 많아 전시는 화~목에 배치했습니다. 국립중앙박물관·국립현대미술관은 월요일에도 엽니다(방문 전 재확인).</li>
+      <li><b>KTX</b>: 동대구→서울 약 1시간 50분, 서울→대전 약 1시간, 대전→동대구 약 50분. 서울→대전→동대구로 끊으면 대전에서 2~3시간 머물 수 있어요(구간 따로 예매).</li>
+      <li><b>짐</b>: 마지막 날은 서울역 물품보관함에 맡기지 말고 숙소 체크아웃 후 바로 KTX 타는 동선이라 짐 걱정 없음. 대전역 성심당은 역 안(2층 대합실)이라 빵 들고 바로 탑승.</li>
+    </ul>
+
+    <h3>📚 리서치 출처 (2026년 10월 기준)</h3>
+    <p class="src">일정·기간은 바뀔 수 있어요. ⚠️ 표시는 "작년 기준 추정" 또는 "미확정"이니 출발 전 공식 채널 확인.
+    <br><a href="https://www.venturesquare.net/1117095" target="_blank" rel="noopener">성수동고릴라 10월 팝업(짱구 전시)</a> ·
+    <a href="https://festival.seoul.go.kr/festival/main/festivalView.do?festacode=361" target="_blank" rel="noopener">2026 광화문 마켓</a> ·
+    <a href="https://culture.seoul.go.kr/night/sub/detailGuide/view.do?dtlId=64" target="_blank" rel="noopener">로맨틱한강 크리스마스 마켓</a> ·
+    <a href="https://www.harpersbazaar.co.kr/article/1908144" target="_blank" rel="noopener">하퍼스바자 2026 하반기 전시 18</a> ·
+    <a href="https://design.co.kr/article/144657/" target="_blank" rel="noopener">디자인 2026 국내 전시</a> ·
+    <a href="https://www.twig24.com/news/2026/02/04/20260204016002" target="_blank" rel="noopener">국중박 스위스 예술 특별전</a> ·
+    <a href="http://ticket.interpark.com/TPGoodsList.asp?Ca=Eve&SubCa=Eve_O&Sort=1" target="_blank" rel="noopener">인터파크 전시(모란디 @더현대)</a> ·
+    <a href="https://www.hankyung.com/article/202603012461g" target="_blank" rel="noopener">한경 가챠 열풍(아이파크몰·AK홍대)</a> ·
+    <a href="https://www.newsis.com/view/ALSX20260809_0000007171" target="_blank" rel="noopener">뉴시스 빵지순례</a> ·
+    <a href="https://www.heraldk.com/article/2026011617113507192" target="_blank" rel="noopener">헤럴드 성심당 대기줄</a> ·
+    <a href="https://hotplacehunter.co.kr/local/article/51155/" target="_blank" rel="noopener">대전 현지인 빵집</a>
+    </p>
+  </section>
+</aside>
+<div id="map" role="region" aria-label="지도"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const CATS = {
+  popup:   { label: "팝업",      color: "var(--c-popup)",   hex: "#8b5cf6", emoji: "🛍️" },
+  bread:   { label: "빵",        color: "var(--c-bread)",   hex: "#d97706", emoji: "🥐" },
+  claw:    { label: "뽑기·가챠", color: "var(--c-claw)",    hex: "#ec4899", emoji: "🧸" },
+  exhibit: { label: "전시",      color: "var(--c-exhibit)", hex: "#2563eb", emoji: "🖼️" },
+  xmas:    { label: "크리스마스", color: "var(--c-xmas)",    hex: "#16a34a", emoji: "🎄" },
+  move:    { label: "교통",      color: "var(--c-move)",    hex: "#6b7280", emoji: "🚄" },
+};
+
+// 좌표는 지도 표시용 근사치입니다. 정확한 위치는 각 항목의 네이버/카카오 링크로 확인하세요.
+// w1/w2: 해당 주간 이용 가능 여부 (true | false | "maybe")
+const DAYS = [
+  {
+    id: 1, title: "Day 1 (월) · 용산 가챠 → 국중박 → 명동 크리스마스",
+    note: "KTX 도착 후 서울역 바로 옆 용산권부터. 월요일이라 사립 미술관 대신 국립 박물관 + 쇼핑몰 위주.",
+    stops: [
+      { t: "08:30", name: "동대구역 → 서울역 KTX", cat: "move", lat: 35.8797, lng: 128.6286, q: "동대구역",
+        desc: "약 1시간 50분. 서울역 도착 후 숙소(명동/을지로)에 짐 먼저 맡기기.", noRoute: true },
+      { t: "10:30", name: "서울역", cat: "move", lat: 37.5547, lng: 126.9707, q: "서울역",
+        desc: "4호선 → 신용산 또는 1호선 → 용산 (5분)." },
+      { t: "11:00", name: "테디뵈르하우스 (용리단길)", cat: "bread", lat: 37.5326, lng: 126.9688, q: "테디뵈르하우스 용산",
+        desc: "크루아상·소금빵으로 유명한 용리단길 베이커리. 브런치 겸 첫 빵.", tags: ["오전 방문 추천"] },
+      { t: "12:30", name: "용산 아이파크몰 · 도파민스테이션", cat: "claw", lat: 37.5296, lng: 126.9646, q: "용산 아이파크몰 도파민스테이션",
+        desc: "일본 IP 가챠·뽑기숍 밀집 구역 + 리빙파크 6층 반다이남코 코리아 스토어(250평). 월 가챠 매출 13억이 나오는 서울 가챠 성지.",
+        tags: ["가챠 1회 6~8천원"] },
+      { t: "15:00", name: "국립중앙박물관 · 쿤스트하우스 취리히 특별전", cat: "exhibit", lat: 37.5239, lng: 126.9803, q: "국립중앙박물관",
+        desc: "인상파~모더니즘 유럽 명작전(2026.11~2027.4 예정, 가제). 상설관은 무료, 특별전은 유료·예매 권장.",
+        tags: ["예매 권장"], warn: "정식 개막일·제목 미확정 — 11월에 공식 홈페이지 확인" },
+      { t: "18:30", name: "신세계백화점 본점 미디어파사드", cat: "xmas", lat: 37.5609, lng: 126.9810, q: "신세계백화점 본점",
+        desc: "매년 11월 중순~1월 서울에서 가장 유명한 크리스마스 외벽 영상. 맞은편 롯데백화점 본점 크리스마스 장식까지 같이.",
+        warn: "2026 연출은 11월 공개 예정(매년 진행)" },
+      { t: "19:30", name: "명동 거리 · 뽑기방 + 저녁", cat: "claw", lat: 37.5636, lng: 126.9849, q: "명동 인형뽑기",
+        desc: "명동은 밤늦게까지 여는 무인 인형뽑기방이 많은 상권. 저녁 먹고 숙소 가는 길에 몇 판." },
+    ],
+  },
+  {
+    id: 2, title: "Day 2 (화) · 성수 팝업 데이 → 잠실 크리스마스",
+    note: "이번 여행의 메인. 평일 오전 성수는 웨이팅이 짧아요. 2호선 한 줄로 성수→건대→잠실 이동.",
+    stops: [
+      { t: "09:30", name: "콰상 (자양동) 오픈런", cat: "bread", lat: 37.5345, lng: 127.0735, q: "콰상 자양동",
+        desc: "두바이 크루아상(카다이프+초콜릿)으로 유명한 오픈런 빵집. 7호선 뚝섬유원지/자양역 인근.",
+        tags: ["오픈런"], warn: "위치는 근사치 — 지도 링크로 확인" },
+      { t: "11:00", name: "짱구는 못말려 몰입형 전시 「놀자! 시공간 대모험」", cat: "exhibit", lat: 37.5430, lng: 127.0560, q: "성수 짱구는 못말려 전시 연무장5길",
+        desc: "성동구 연무장5길 9-29. 조형물·미디어아트 속에서 짱구·흰둥이와 미션 수행하는 체험형 전시. 굿즈샵 필수 코스.",
+        tags: ["2026.10.17~2027.1.24", "커플 사진 맛집"] },
+      { t: "12:30", name: "성수 연무장길 팝업 투어", cat: "popup", lat: 37.5434, lng: 127.0577, q: "성수 연무장길",
+        desc: "연무장길·아뜰리에길 일대 팝업 밀집지. 12월엔 브랜드 크리스마스 팝업이 몰려요. 토리든 커넥트 성수(~12/31) 등.",
+        warn: "12월 라인업은 출발 1주 전 팝플리/성수동고릴라에서 확인" },
+      { t: "14:30", name: "어니언 성수", cat: "bread", lat: 37.5447, lng: 127.0585, q: "어니언 성수",
+        desc: "폐공장 개조 베이커리 카페의 원조. 팡도르 + 커피로 쉬어가기." },
+      { t: "15:30", name: "서울숲 산책", cat: "popup", lat: 37.5444, lng: 127.0374, q: "서울숲",
+        desc: "팝업 돌다 지치면 잠깐 산책. 서울숲역 주변 디저트숍도 많음." },
+      { t: "17:00", name: "건대 커먼그라운드 · 건대 뽑기 거리", cat: "claw", lat: 37.5408, lng: 127.0680, q: "건대입구 인형뽑기",
+        desc: "컨테이너 쇼핑몰 구경 + 건대 먹자골목 뽑기방 밀집. 저녁도 여기서." },
+      { t: "19:00", name: "잠실 롯데월드몰 · 크리스마스 마켓", cat: "xmas", lat: 37.5125, lng: 127.1025, q: "롯데월드타워 월드파크 크리스마스마켓",
+        desc: "월드파크 잔디광장 유럽풍 크리스마스 마켓 + 대형 트리. 몰 안에도 가챠숍이 들어왔어요.",
+        warn: "2025년 11/20~1/4 운영 — 2026 일정 미발표" },
+    ],
+  },
+  {
+    id: 3, title: "Day 3 (수) · 광화문·서촌 전시 데이",
+    note: "도보로 이어지는 미술관 클러스터. 저녁엔 광화문·청계천 크리스마스.",
+    stops: [
+      { t: "10:00", name: "국립현대미술관 서울관 · 서도호 개인전", cat: "exhibit", lat: 37.5786, lng: 126.9800, q: "국립현대미술관 서울",
+        desc: "'집' 패브릭 설치로 유명한 서도호의 대규모 개인전. 사진 잘 나오는 공간형 작품이라 전시 초보 커플에게 추천.",
+        tags: ["2026.8.27~2027.2.9"] },
+      { t: "11:30", name: "국제갤러리 (삼청동)", cat: "exhibit", lat: 37.5807, lng: 126.9806, q: "국제갤러리",
+        desc: "무료 관람 갤러리. 12월 이희준 개인전(K1·K2) 예정. 국현 서울관에서 도보 3분.",
+        tags: ["무료"], warn: "12월 중 개막 예정 — 정확한 날짜 확인" },
+      { t: "12:30", name: "서촌 점심 · 통인시장", cat: "bread", lat: 37.5810, lng: 126.9698, q: "서촌 통인시장",
+        desc: "기름떡볶이 + 서촌 골목 베이커리·카페. 근처 그라운드시소 서촌도 들러볼 만(사진·애니 전시 위주)." },
+      { t: "14:30", name: "세화미술관 · 게오르그 바젤리츠", cat: "exhibit", lat: 37.5703, lng: 126.9727, q: "세화미술관",
+        desc: "올해 4월 작고한 거장의 60여 년 회고. 광화문 흥국생명빌딩, 망치질하는 사람 조형물 옆.",
+        tags: ["~2026.12.27", "월요일 휴관"] },
+      { t: "16:00", name: "국립현대미술관 덕수궁 · 「파리의 이방인」", cat: "exhibit", lat: 37.5658, lng: 126.9751, q: "국립현대미술관 덕수궁",
+        desc: "파리에서 활동한 이방인 예술가들 전시. 덕수궁 석조전 옆 — 해 질 녘 돌담길 산책까지.",
+        tags: ["2026.12~2027.4"], warn: "12월 개막 — 정확한 개막일 확인 (7~11일 주간이면 아직 안 열었을 수 있음)", w1: "maybe" },
+      { t: "18:00", name: "광화문 마켓 (광화문광장)", cat: "xmas", lat: 37.5720, lng: 126.9769, q: "광화문광장",
+        desc: "유럽 크리스마스 마켓 콘셉트 빌리지 + 소상공인 부스 + 대형 트리. 핫와인·츄러스 들고 청계천까지.",
+        tags: ["저녁 18~22시(작년)"], warn: "2025년 12/12~31 운영. 2026은 12월 예정만 발표", w1: false, w2: true },
+      { t: "19:30", name: "청계천 겨울 조명", cat: "xmas", lat: 37.5693, lng: 126.9784, q: "청계광장",
+        desc: "청계광장~광교 구간 연말 조명(서울윈터페스타 기간). 광화문 마켓에서 걸어서 5분.",
+        warn: "2026 서울윈터페스타 일정 확인" },
+    ],
+  },
+  {
+    id: 4, title: "Day 4 (목) · 더현대 → 홍대·연남 뽑기 투어",
+    note: "오전엔 서울 팝업 성지 더현대, 오후~밤은 뽑기·가챠의 본진 홍대.",
+    stops: [
+      { t: "10:30", name: "더현대 서울 (여의도)", cat: "popup", lat: 37.5259, lng: 126.9284, q: "더현대 서울",
+        desc: "5층 사운즈포레스트 크리스마스 빌리지(매년 대형 연출) + B1·B2 팝업 존(주 단위 교체). 평일 오픈 직후가 가장 한산.",
+        tags: ["오픈 10:30"], warn: "2026 크리스마스 연출·예약 방식은 11월 공지 (평일은 대개 현장 입장)" },
+      { t: "12:00", name: "ALT.1 · 조르조 모란디 전", cat: "exhibit", lat: 37.5262, lng: 126.9280, q: "더현대 서울 ALT.1",
+        desc: "더현대 6층 전시관. 이탈리아 정물화 거장 모란디 — 차분한 색감이라 쉬어가는 전시로 좋아요.",
+        tags: ["2026.11.21~2027.3.1"] },
+      { t: "14:30", name: "AK& 홍대 · 가챠 전문관", cat: "claw", lat: 37.5574, lng: 126.9245, q: "AK플라자 홍대",
+        desc: "홍대입구역 직결. 가챠 기기를 1년 반 만에 2배 이상 늘린 대형 가챠 매장.", tags: ["역 직결"] },
+      { t: "15:30", name: "홍대 걷고싶은거리 · 뽑기방 골목", cat: "claw", lat: 37.5546, lng: 126.9226, q: "홍대 인형뽑기",
+        desc: "서울에서 인형뽑기방·가챠숍 밀도가 가장 높은 동네. 키링·인형 '백꾸' 아이템 노리기. 홍대 팝업·캐릭터숍(카카오·라인 등)도 이 라인." },
+      { t: "17:30", name: "피터팬1978 (연희동)", cat: "bread", lat: 37.5664, lng: 126.9308, q: "피터팬1978 연희",
+        desc: "10년 연속 블루리본 연희동 터줏대감. 대구 가서 먹을 바게트·식빵류 사기 좋음.",
+        warn: "저녁엔 인기 빵 품절 가능 — 위치 근사치" },
+      { t: "19:00", name: "연남동 경의선숲길 · 저녁", cat: "popup", lat: 37.5610, lng: 126.9250, q: "연남동 경의선숲길",
+        desc: "연트럴파크 산책 + 연남동 소품숍·작은 팝업. 마지막 서울 밤 저녁." },
+    ],
+  },
+  {
+    id: 5, title: "Day 5 (금) · 대전 성심당 → 대구",
+    note: "서울→대전 KTX 약 1시간. 대전역에서 본점까지 지하철 1호선 1정거장(중앙로역).",
+    stops: [
+      { t: "10:30", name: "서울역 → 대전역 KTX", cat: "move", lat: 37.5547, lng: 126.9707, q: "서울역", desc: "체크아웃 후 바로 출발.", noRoute: true },
+      { t: "11:40", name: "대전역", cat: "move", lat: 36.3323, lng: 127.4347, q: "대전역", desc: "1호선 중앙로역까지 1정거장 or 도보 15분." },
+      { t: "12:00", name: "성심당 본점 (은행동)", cat: "bread", lat: 36.3277, lng: 127.4273, q: "성심당 본점",
+        desc: "튀김소보로·부추빵. 평일 낮이라도 줄 있음. 연말 성수기 주말엔 대기 5시간 기록.",
+        tags: ["평일 낮 추천"] },
+      { t: "12:45", name: "성심당 케익부띠끄 본점", cat: "bread", lat: 36.3281, lng: 127.4266, q: "성심당 케익부띠끄 본점",
+        desc: "겨울 시즌 '딸기시루'(작년 대형 2.3kg 49,000원). 크리스마스 직전이라 줄이 깁니다.",
+        warn: "딸기시루 판매 시기·수량 공식 SNS 확인. 리셀 구매 금지" },
+      { t: "13:30", name: "콜드버터베이크샵 (대흥동)", cat: "bread", lat: 36.3255, lng: 127.4222, q: "콜드버터베이크샵 대흥",
+        desc: "대전 구움과자 대표. 휘낭시에가 특히 유명 — 선물용 박스 추천.", warn: "위치 근사치" },
+      { t: "15:00", name: "성심당 대전역점", cat: "bread", lat: 36.3326, lng: 127.4340, q: "성심당 대전역점",
+        desc: "역 2층 대합실. 본점에서 못 산 빵 마무리 → 바로 탑승. 줄이 본점보다 짧은 편." },
+      { t: "16:00", name: "대전역 → 동대구역 KTX", cat: "move", lat: 35.8797, lng: 128.6286, q: "동대구역", desc: "약 50분. 빵 들고 귀가 🏠", noRoute: true },
+    ],
+  },
+];
+
+const WEEKS = {
+  w1: { label: "12/7–11", verdict: "광화문 마켓(작년 12/12~)이 아직 안 열었을 가능성이 높고, 덕수궁 「파리의 이방인」도 개막 전일 수 있어요. 대신 웨이팅은 조금 더 짧습니다." },
+  w2: { label: "12/14–18", verdict: "<b>추천 주간.</b> 광화문 마켓·명동/더현대 연출이 모두 무르익고, 금요일(12/18)엔 로맨틱한강 크리스마스 마켓(12/18~27)도 시작해요. 크리스마스 직전 성심당 줄은 각오!" },
+};
+
+const CHECKLIST = [
+  "KTX 예매: 동대구→서울 / 서울→대전 / 대전→동대구 (코레일톡, 한 달 전 오픈)",
+  "숙소: 명동·을지로 4박",
+  "국립중앙박물관 취리히 특별전 예매 (11월 오픈 후)",
+  "짱구 전시 「놀자! 시공간 대모험」 평일 회차 예매",
+  "출발 1주 전: 성수·더현대 12월 팝업 리스트 확인 (팝플리/성수동고릴라)",
+  "광화문 마켓·롯데월드몰 마켓 2026 일정 확인",
+  "성심당 딸기시루 판매 공지 확인 (인스타 @sungsimdang_official)",
+  "인형 담아올 에코백 + 보조배터리",
+];
+
+// ---------- state ----------
+const state = { day: 0, week: "w2", cats: new Set(Object.keys(CATS)) };
+
+// ---------- map ----------
+const map = L.map("map", { zoomControl: true }).setView([37.55, 126.99], 12);
+if (!window.TILELESS) L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  maxZoom: 19, subdomains: "abcd",
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+}).addTo(map);
+const layer = L.layerGroup().addTo(map);
+
+// 지도 타일을 불러올 수 없는 환경(예: 외부 이미지가 막힌 미리보기)에서는 한강과 동네 이름만 그린 간이 지도를 보여줍니다.
+if (window.TILELESS) {
+  document.getElementById("map").classList.add("tileless");
+  const water = getComputedStyle(document.documentElement).getPropertyValue("--water").trim() || "#cfe3f2";
+  L.polyline([[37.592,126.80],[37.575,126.84],[37.560,126.875],[37.545,126.90],[37.535,126.925],[37.524,126.95],[37.517,126.975],
+    [37.513,127.00],[37.519,127.02],[37.528,127.045],[37.535,127.07],[37.530,127.088],[37.520,127.10],[37.523,127.12],[37.540,127.135],[37.555,127.15]],
+    { color: water, weight: 16, opacity: 1, interactive: false }).addTo(map);
+  [["한강", 37.522, 126.995], ["명동·을지로", 37.566, 126.99], ["광화문·서촌", 37.582, 126.972], ["용산", 37.533, 126.955],
+   ["여의도", 37.521, 126.918], ["홍대·연남", 37.561, 126.915], ["성수", 37.548, 127.055], ["건대", 37.545, 127.075],
+   ["잠실", 37.508, 127.095], ["대전 원도심", 36.330, 127.43]].forEach(([n, la, ln]) =>
+    L.tooltip({ permanent: true, direction: "center", className: "area", interactive: false }).setLatLng([la, ln]).setContent(n).addTo(map));
+}
+
+const naver = q => "https://map.naver.com/p/search/" + encodeURIComponent(q);
+const kakao = q => "https://map.kakao.com/link/search/" + encodeURIComponent(q);
+
+function availability(s) {
+  const v = s[state.week];
+  if (v === false) return "off";
+  if (v === "maybe") return "maybe";
+  return "on";
+}
+
+function pinIcon(label, hex, dim) {
+  return L.divIcon({
+    className: "", iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -26],
+    html: `<div class="pin${dim ? " dim" : ""}" style="background:${hex}"><span>${label}</span></div>`,
+  });
+}
+
+function popupHtml(s, d) {
+  const c = CATS[s.cat];
+  return `<b>${s.name}</b><br><span style="color:${c.hex}">${c.emoji} ${c.label}</span> · Day ${d.id} ${s.t}<br>${s.desc}` +
+    (s.warn ? `<br><span style="color:#9a6200">⚠️ ${s.warn}</span>` : "") +
+    `<br><a href="${naver(s.q)}" target="_blank" rel="noopener">네이버지도</a> · <a href="${kakao(s.q)}" target="_blank" rel="noopener">카카오맵</a>`;
+}
+
+const markerIndex = new Map();
+
+function render() {
+  layer.clearLayers();
+  markerIndex.clear();
+  const days = state.day === 0 ? DAYS : DAYS.filter(d => d.id === state.day);
+  const bounds = [];
+
+  days.forEach(d => {
+    const path = [];
+    d.stops.forEach((s, i) => {
+      if (!state.cats.has(s.cat)) return;
+      const av = availability(s);
+      const label = state.day === 0 ? String(d.id) : String(i + 1);
+      const m = L.marker([s.lat, s.lng], { icon: pinIcon(label, CATS[s.cat].hex, av === "off") })
+        .bindPopup(popupHtml(s, d)).addTo(layer);
+      markerIndex.set(`${d.id}-${i}`, m);
+      // 동대구 등 원거리 지점은 서울 화면을 망가뜨리지 않도록 경로/범위에서 제외
+      if (!s.noRoute) path.push([s.lat, s.lng]);
+      // 전체 보기에서는 서울 동선이 한눈에 보이도록 대전 지점은 범위에서 제외
+      if (!s.noRoute && (state.day !== 0 || s.lat > 37)) bounds.push([s.lat, s.lng]);
+    });
+    if (state.day !== 0 && path.length > 1) {
+      L.polyline(path, { color: "#c8102e", weight: 3, opacity: .7, dashArray: "6 6" }).addTo(layer);
+    }
+  });
+  if (bounds.length) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+
+  renderList(days);
+}
+
+function renderList(days) {
+  const el = document.getElementById("list");
+  el.innerHTML = "";
+  days.forEach(d => {
+    const head = document.createElement("div");
+    head.className = "dayhead";
+    head.innerHTML = `<h2>${d.title}</h2><p>${d.note}</p>`;
+    el.appendChild(head);
+    const ol = document.createElement("ol");
+    ol.className = "stops";
+    d.stops.forEach((s, i) => {
+      if (!state.cats.has(s.cat)) return;
+      const c = CATS[s.cat];
+      const av = availability(s);
+      const li = document.createElement("li");
+      if (av === "off") li.classList.add("dim");
+      const tags = (s.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+      const warn = s.warn ? `<span class="tag warn">⚠️ ${s.warn}</span>` : "";
+      const avTag = av === "off" ? `<span class="tag warn">이 주간엔 운영 전일 가능성 높음</span>`
+                  : av === "maybe" ? `<span class="tag warn">이 주간엔 개막 여부 확인</span>` : "";
+      li.innerHTML = `
+        <div class="num" style="background:${c.hex}">${i + 1}</div>
+        <div>
+          <div class="t">${s.t}</div>
+          <div class="name">${s.name}<span class="cat" style="background:${c.hex}">${c.emoji} ${c.label}</span></div>
+          <div class="desc">${s.desc}</div>
+          ${(tags || warn || avTag) ? `<div class="tags">${tags}${avTag}${warn}</div>` : ""}
+          <div class="links">
+            <a href="${naver(s.q)}" target="_blank" rel="noopener">네이버지도 ↗</a>
+            <a href="${kakao(s.q)}" target="_blank" rel="noopener">카카오맵 ↗</a>
+          </div>
+        </div>`;
+      li.addEventListener("click", e => {
+        if (e.target.closest("a")) return;
+        const m = markerIndex.get(`${d.id}-${i}`);
+        document.querySelectorAll("ol.stops li.active").forEach(x => x.classList.remove("active"));
+        li.classList.add("active");
+        if (m) { map.setView(m.getLatLng(), 16); m.openPopup(); }
+      });
+      ol.appendChild(li);
+    });
+    el.appendChild(ol);
+  });
+}
+
+// ---------- controls ----------
+function buildDays() {
+  const nav = document.getElementById("days");
+  const items = [{ id: 0, label: "전체" }, ...DAYS.map(d => ({ id: d.id, label: `D${d.id}` }))];
+  nav.innerHTML = "";
+  items.forEach(it => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.textContent = it.label;
+    b.setAttribute("aria-pressed", String(state.day === it.id));
+    b.onclick = () => { state.day = it.id; save(); buildDays(); render(); document.getElementById("side").scrollTop = 0; };
+    nav.appendChild(b);
+  });
+}
+
+function buildCats() {
+  const box = document.getElementById("cats");
+  box.innerHTML = "";
+  Object.entries(CATS).forEach(([k, c]) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (state.cats.has(k) ? "" : " off");
+    b.innerHTML = `<span class="dot" style="background:${c.hex}"></span>${c.label}`;
+    b.onclick = () => {
+      state.cats.has(k) ? state.cats.delete(k) : state.cats.add(k);
+      if (state.cats.size === 0) Object.keys(CATS).forEach(x => state.cats.add(x));
+      buildCats(); render();
+    };
+    box.appendChild(b);
+  });
+}
+
+function buildWeek() {
+  document.querySelectorAll("[data-week]").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.week === state.week));
+    b.onclick = () => { state.week = b.dataset.week; save(); buildWeek(); render(); };
+  });
+  document.getElementById("verdict").innerHTML = WEEKS[state.week].verdict;
+}
+
+function buildChecklist() {
+  const ul = document.getElementById("checklist");
+  const done = load("checks", {});
+  CHECKLIST.forEach((txt, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<label><input type="checkbox" ${done[i] ? "checked" : ""}> ${txt}</label>`;
+    li.querySelector("input").onchange = e => { done[i] = e.target.checked; store("checks", done); };
+    ul.appendChild(li);
+  });
+}
+
+// localStorage는 편의 기능일 뿐 — 실패해도 앱은 정상 동작
+function load(k, fallback) { try { return JSON.parse(localStorage.getItem("seoul-trip:" + k)) ?? fallback; } catch { return fallback; } }
+function store(k, v) { try { localStorage.setItem("seoul-trip:" + k, JSON.stringify(v)); } catch {} }
+function save() { store("view", { day: state.day, week: state.week }); }
+
+const saved = load("view", null);
+if (saved) { state.day = saved.day ?? 0; state.week = saved.week ?? "w2"; }
+buildWeek(); buildDays(); buildCats(); buildChecklist(); render();
+</script>
+</body>
+</html>
