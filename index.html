@@ -468,7 +468,7 @@ function drawBaseMap() {
   const note = L.control({ position: "topright" });
   note.onAdd = () => {
     const div = L.DomUtil.create("div", "mapnote");
-    div.textContent = "구 경계 지도예요. 길·지하철까지 보려면 각 Day의 ‘실제 지도로 열기’를 누르세요.";
+    div.textContent = "구 경계 지도예요. 길찾기는 목록의 장소 사이 ‘카카오맵 · 구글’ 버튼으로.";
     return div;
   };
   note.addTo(map);
@@ -483,14 +483,6 @@ else {
 
 const naver = q => "https://map.naver.com/p/search/" + encodeURIComponent(q);
 const kakao = q => "https://map.kakao.com/link/search/" + encodeURIComponent(q);
-// 하루 장소 전체를 순서대로 찍어 보는 링크(구글 지도). 대중교통은 경유지를 지원하지 않아 자동차 경로로 표시.
-// 서울 밖 이동 구간(KTX)은 제외.
-const dayRoute = d => {
-  const qs = d.stops.filter(s => !s.noRoute).map(s => s.q);
-  const p = new URLSearchParams({ api: "1", origin: qs[0], destination: qs[qs.length - 1], travelmode: "driving" });
-  if (qs.length > 2) p.set("waypoints", qs.slice(1, -1).join("|"));
-  return "https://www.google.com/maps/dir/?" + p.toString();
-};
 // 구간별 대중교통 길찾기 (장소 이름으로 검색)
 const legKakao = (a, b) => "https://map.kakao.com/?sName=" + encodeURIComponent(a) + "&eName=" + encodeURIComponent(b);
 const legGoogle = (a, b) => "https://www.google.com/maps/dir/?" +
@@ -565,8 +557,7 @@ function renderList(days) {
     head.className = "dayhead";
     const foods = d.stops.filter(s => s.cat === "food");
     head.innerHTML = `<h2>${d.title}</h2><p>${d.note}</p>
-      <a class="routebtn" href="${dayRoute(d)}" target="_blank" rel="noopener">🗺️ 하루 장소 순서대로 보기 (구글 지도 · 자동차 경로)</a>
-      <p class="routehint">대중교통 길찾기는 장소 사이 회색 줄의 <b>카카오맵 · 구글</b> 버튼으로 구간별로 보세요.</p>
+      <p class="routehint">🧭 길찾기는 장소 사이 회색 줄의 <b>카카오맵 · 구글</b> 버튼으로 구간별로 열어요 (대중교통).</p>
       ${foods.length ? `<div class="foodbox"><b>🍽️ 오늘의 맛집</b>${foods.map(f =>
         `<div>${f.t} <a href="${naver(f.q)}" target="_blank" rel="noopener">${f.name}</a>${(f.alts || []).map(a =>
           ` · <span class="alt">대안</span> <a href="${naver(a.q)}" target="_blank" rel="noopener">${a.name}</a>`).join("")}</div>`).join("")}</div>` : ""}`;
